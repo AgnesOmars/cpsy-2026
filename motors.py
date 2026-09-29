@@ -4,7 +4,7 @@ import os
 import time
 import curses
 
-from gpiozero import DigitalOutputDevice, Motor, Robot
+from gpiozero import DigitalOutputDevice, Motor, Robot, RotaryEncoder
 
 try:
     stdscr = curses.initscr()
@@ -18,8 +18,9 @@ try:
     # Configure your own pins.
     slp = DigitalOutputDevice('GPIO26')
     slp.on()
-    robot = Robot(right=Motor('GPIO12', 'GPIO18'), left=Motor('GPIO13', 'GPIO19'))
-
+    robot = Robot(right=Motor('GPIO12', 'GPIO18'), left=Motor('GPIO19', 'GPIO13'))
+    left = RotaryEncoder(6, 5, max_steps=0)
+    right = RotaryEncoder(17, 27, max_steps=0)
     # Here starts the code to make the robot move
     while direction != ord('q'):
         stdscr.refresh()
@@ -35,10 +36,11 @@ try:
             robot.backward()
         if direction == ord('d'):
             stdscr.addstr(1, 10, "Right   ")
-            robot.right()
+            robot.right(0.2)
         if direction == ord('w'):
             stdscr.addstr(1, 10, "Forward ")
-            robot.forward()
+            robot.forward(0.2)
+        stdscr.addstr(3, 10, f"left: {left.steps}  right: {right.steps}      ")
         time.sleep(0.04)
 finally:
     # Important to set everthing back by end of the script

@@ -1,9 +1,11 @@
-from gpiozero import DigitalInputDevice
+from gpiozero import DigitalOutputDevice
 from time import sleep
 
-a = DigitalInputDevice(5, pull_up=True)
-b = DigitalInputDevice(6, pull_up=True)
+slp = DigitalOutputDevice(26)
+slp.on()
+pin19 = DigitalOutputDevice(19)
 
-while True:
-    print(a.value, b.value)
-    sleep(0.05)
+pin19.on()
+sleep(2)
+pin19.off()
+slp.off()

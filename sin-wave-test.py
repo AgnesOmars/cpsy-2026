@@ -3,7 +3,7 @@ import time
 import numpy as np
 
 T = 4          # period of the sine wave (s)
-u0 = 0.12       # amplitude, kept low so no steps are missed
+u0 = 1       # amplitude, kept low so no steps are missed
 tstop = 4      # run one full period (s)
 tsample = 0.05 # time between samples (s)
 PPR = 693      # average of left (694.8) and right (691.2)

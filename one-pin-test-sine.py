@@ -3,7 +3,7 @@ import time
 import numpy as np
 
 T = 4          # period of the sine wave (s)
-u0 = 0.3       # amplitude
+u0 = 1       # amplitude
 tstop = 4      # run one full period (s)
 tsample = 0.05 # time between samples (s)
 PPR = 693      # check again with the new counting, see below

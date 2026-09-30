@@ -1,0 +1,11 @@
+[Unit]
+Description=display-ip
+After=network-online.target
+[Service]
+Type=simple
+User=agnesomars
+WorkingDirectory=/home/agnesomars
+ExecStart=/home/agnesomars/cpsy/bin/python3 display-ip.py
+Restart=never
+[Install]
+WantedBy=multi-user.target

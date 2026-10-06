@@ -3,11 +3,11 @@ import math
 from gpiozero import Robot, Motor, DigitalOutputDevice
 from encoder import Encoders
 
-SPEED = 0.3            # motor speed, 0 to 1
+SPEED = 0.8            # motor speed, 0 to 1
 DRIVE_TIME = 5         # seconds
-PPR = 692              # steps per wheel rotation, from your PPR test
-WHEEL_DIAMETER = 0.0445 # metres, measure your wheel
-WHEEL_BASE = 0.14      # metres between the wheels, measure your robot
+PPR = 692              # steps per wheel rotation, from PPR test
+WHEEL_DIAMETER = 0.0445 # metres
+WHEEL_BASE = 0.125      # metres between the wheels, measure your robot
 
 slp = DigitalOutputDevice('GPIO26')
 slp.on()
@@ -22,7 +22,7 @@ try:
     robot.stop()
     tdrive = time.perf_counter() - tstart
 
-    time.sleep(0.5)  # let the wheels stop rolling
+    time.sleep(0.5) 
     left1, right1 = enc.read()
 finally:
     robot.stop()

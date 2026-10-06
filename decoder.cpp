@@ -141,11 +141,8 @@ void
 encoder_state::run(int steps) noexcept
 {
     lgGpioReport_t event;
-    for (int i = 0; i < STEPS; i++) {
-        if (!inputs.try_pop(event))
-            return;
+    while (inputs.try_pop(event))
         step(event);
-    }
 }
 
 /* Callback function.

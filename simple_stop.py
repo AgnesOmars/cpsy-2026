@@ -2,6 +2,7 @@ import time
 import busio
 import digitalio
 import board
+import os
 import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
 from simple_pid import PID
@@ -43,8 +44,16 @@ stopped = False
 clear = 0          # how many readings in a row have been below V_GO
 
 
-log = open('stop_test9.csv', 'w')
+n = 1
+while os.path.exists(f'stop_test{n}.csv'):
+    n += 1
+log = open(f'stop_test{n}.csv', 'w')
 log.write('t,v,stopped,left_speed,right_speed\n')
+
+def brake():
+    for m in (robot.left_motor, robot.right_motor):
+        m.forward_device.value = 1
+        m.backward_device.value = 1
 
 try:
     left_prev, right_prev = enc.read()
@@ -75,7 +84,7 @@ try:
         log.write(f'{t_now:.3f},{v:.4f},{int(stopped)},{left_speed:.0f},{right_speed:.0f}\n')
         # 3. ACT: stop directly (not through the PID), or let the PID drive
         if stopped:
-            robot.stop()
+            brake()
             pid_left.reset()     # forget the built-up integral, so no lurch when driving again
             pid_right.reset()
             print(f'ADC Voltage: {v:.4f}V  STOPPED')

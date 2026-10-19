@@ -9,7 +9,7 @@ from simple_pid import PID
 from gpiozero import Robot, Motor, DigitalOutputDevice
 from encoder import Encoders
 
-V_STOP = 1.7       # voltage, at 30 cm, give time to stop
+V_STOP = 1.94       # voltage, at 30 cm, give time to stop
 V_GO = 1.5         # drive again below this (about 30 - 40 cm) - lower than V_STOP
 GO_COUNT = 5       # readings in a row below V_GO before driving again
 SETPOINT = 1500    # target speed for both wheels, in encoder steps per second

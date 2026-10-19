@@ -42,7 +42,7 @@ pid_right = PID(KP, KI, KD, setpoint=SETPOINT, sample_time=None, output_limits=(
 stopped = False
 clear = 0          # how many readings in a row have been below V_GO
 
-log = open('stop_test.csv', 'w')
+log = open('stop_test.csv2', 'w')
 log.write('t,v,stopped,left_speed,right_speed\n')
 
 try:

@@ -8,7 +8,7 @@ from simple_pid import PID
 from gpiozero import Robot, Motor, DigitalOutputDevice
 from encoder import Encoders
 
-V_STOP = 2.4081       # voltage at 20 cm - use your own value from Lab 4
+V_STOP = 2.3       # voltage, little below 20 cm
 V_GO = 2.0         # drive again below this (about 30 cm) - lower than V_STOP
 GO_COUNT = 5       # readings in a row below V_GO before driving again
 SETPOINT = 1500    # target speed for both wheels, in encoder steps per second
@@ -42,6 +42,9 @@ pid_right = PID(KP, KI, KD, setpoint=SETPOINT, sample_time=None, output_limits=(
 stopped = False
 clear = 0          # how many readings in a row have been below V_GO
 
+log = open('stop_test.csv', 'w')
+log.write('t,v,stopped,left_speed,right_speed\n')
+
 try:
     left_prev, right_prev = enc.read()
     t_prev = time.perf_counter()
@@ -68,7 +71,7 @@ try:
                 stopped = False
         else:
             clear = 0
-
+        log.write(f'{t_now:.3f},{v:.4f},{int(stopped)},{left_speed:.0f},{right_speed:.0f}\n')
         # 3. ACT: stop directly (not through the PID), or let the PID drive
         if stopped:
             robot.stop()
@@ -81,5 +84,6 @@ try:
 
 finally:
     robot.stop()
+    log.close()
     slp.off()
     enc.close()

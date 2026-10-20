@@ -14,7 +14,7 @@ TH = 2500    # midpoint from your measurements
 try:
     while True:
         r, g, b, c = s.color_raw
-	print(c, "line" if c < TH else "floor")
+        print(c, "line" if c < TH else "floor")
         if c < TH:                     # dark = on line -> turn left
             robot.value = (0, SPEED)
         else:                          # bright = floor -> turn right

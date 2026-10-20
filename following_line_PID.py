@@ -8,13 +8,17 @@ from encoder import Encoders
 # ---------------------------------------------------------------
 # Settings: change these between tests
 # ---------------------------------------------------------------
-SETPOINT = 600     # Target speed for the driving wheel, in encoder steps per second.
+SETPOINT = 600     # Base speed for both wheels, in encoder steps per second.
                    # 692 steps = one wheel rotation, so 600 is just under 1 rotation/s.
-KP = 0.0008        # Proportional gain
-KI = 0.002         # Integral gain
-KD = 0.0           # Derivative gain
-TH = 2500          # Clear-channel threshold: below = black line, above = white floor
-INNER = 0.5
+K = 1.0            # Steering strength. Higher = sharper turns, lower = smoother.
+KP = 0.0008        # Wheel PID: proportional gain
+KI = 0.002         # Wheel PID: integral gain
+KD = 0.0           # Wheel PID: derivative gain
+
+BLACK = 300        # Measured c on the black line
+WHITE = 4700       # Measured c on the white floor
+TH = (BLACK + WHITE) / 2   # The edge we follow (2500)
+
 # ---------------------------------------------------------------
 # Hardware setup
 # ---------------------------------------------------------------
@@ -38,16 +42,16 @@ enc = Encoders(left_pins=(5, 6), right_pins=(27, 17))
 pid_left = PID(KP, KI, KD, setpoint=SETPOINT, sample_time=None, output_limits=(0, 1))
 pid_right = PID(KP, KI, KD, setpoint=SETPOINT, sample_time=None, output_limits=(0, 1))
 
-
 try:
     left_prev, right_prev = enc.read()
     t_prev = time.perf_counter()
 
     # No sleep needed: reading the color sensor already takes ~25 ms.
     while True:
-        # 1. SENSE: is the sensor over the black line?
+        # 1. SENSE: how far is the sensor from the edge?
+        #    error = -0.5 on black, 0 on the edge, +0.5 on white
         r, g, b, c = sensor.color_raw
-        on_line = c < TH
+        error = (c - TH) / (WHITE - BLACK)
 
         # 2. MEASURE: wheel speeds in steps per second
         left, right = enc.read()
@@ -58,24 +62,20 @@ try:
         left_prev, right_prev, t_prev = left, right, t_now
 
         # 3. DECIDE (follow the left edge of the line):
-        #    black -> turn left: stop left wheel, right wheel drives
-        #    white -> turn right: stop right wheel, left wheel drives
-       
-        if on_line:
-            pid_left.setpoint = SETPOINT * INNER
-            pid_right.setpoint = SETPOINT
-        else:
-            pid_left.setpoint = SETPOINT
-            pid_right.setpoint = SETPOINT * INNER
- 
-        # 4. CALCULATE: both wheels always use their PID
+        #    on black (error < 0) -> left wheel slower, right faster -> turn left
+        #    on white (error > 0) -> left wheel faster, right slower -> turn right
+        #    the further from the edge, the harder it turns
+        pid_left.setpoint = max(0, SETPOINT * (1 + K * error))
+        pid_right.setpoint = max(0, SETPOINT * (1 - K * error))
+
+        # 4. CALCULATE: each wheel PID reaches its target speed
         left_cmd = pid_left(left_speed)
         right_cmd = pid_right(right_speed)
 
         # 5. ACT
         robot.value = (left_cmd, right_cmd)
 
-        print(f"c={c:5d} {'BLACK' if on_line else 'white'}  "
+        print(f"c={c:5d} err={error:+.2f}  "
               f"left {left_speed:5.0f} ({left_cmd:.2f})  right {right_speed:5.0f} ({right_cmd:.2f})")
 
 finally:

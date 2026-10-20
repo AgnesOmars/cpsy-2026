@@ -22,4 +22,11 @@ while True:
 
     print(r, g, b, name)
 
+    image = Image.new("1", (128, 64))
+    draw = ImageDraw.Draw(image)
+    draw.text((0, 0), f"R:{r} G:{g} B:{b}", fill=255)
+    draw.text((0, 16), name, fill=255)
+    oled.image(image)
+    oled.show()
+
     time.sleep(1)

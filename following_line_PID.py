@@ -14,7 +14,7 @@ KP = 0.0008        # Proportional gain
 KI = 0.002         # Integral gain
 KD = 0.0           # Derivative gain
 TH = 2500          # Clear-channel threshold: below = black line, above = white floor
-
+INNER = 0.5
 # ---------------------------------------------------------------
 # Hardware setup
 # ---------------------------------------------------------------
@@ -38,10 +38,6 @@ enc = Encoders(left_pins=(5, 6), right_pins=(27, 17))
 pid_left = PID(KP, KI, KD, setpoint=SETPOINT, sample_time=None, output_limits=(0, 1))
 pid_right = PID(KP, KI, KD, setpoint=SETPOINT, sample_time=None, output_limits=(0, 1))
 
-# Last motor power each PID gave while its wheel was driving.
-# Used to restart a wheel with roughly the right power after it was stopped.
-left_out = 0.0
-right_out = 0.0
 
 try:
     left_prev, right_prev = enc.read()
@@ -64,29 +60,17 @@ try:
         # 3. DECIDE (follow the left edge of the line):
         #    black -> turn left: stop left wheel, right wheel drives
         #    white -> turn right: stop right wheel, left wheel drives
-        drive_left = not on_line
-        drive_right = on_line
-
-        # 4. CALCULATE: PID only for the wheel that drives.
-        #    The stopped wheel's PID is paused, so its integral is frozen.
-        #    When it starts again it continues from its last output.
-        if drive_left:
-            if not pid_left.auto_mode:
-                pid_left.set_auto_mode(True, last_output=left_out)
-            left_out = pid_left(left_speed)
-            left_cmd = left_out
+       
+        if on_line:
+            pid_left.setpoint = SETPOINT * INNER
+            pid_right.setpoint = SETPOINT
         else:
-            pid_left.auto_mode = False
-            left_cmd = 0
-
-        if drive_right:
-            if not pid_right.auto_mode:
-                pid_right.set_auto_mode(True, last_output=right_out)
-            right_out = pid_right(right_speed)
-            right_cmd = right_out
-        else:
-            pid_right.auto_mode = False
-            right_cmd = 0
+            pid_left.setpoint = SETPOINT
+            pid_right.setpoint = SETPOINT * INNER
+ 
+        # 4. CALCULATE: both wheels always use their PID
+        left_cmd = pid_left(left_speed)
+        right_cmd = pid_right(right_speed)
 
         # 5. ACT
         robot.value = (left_cmd, right_cmd)

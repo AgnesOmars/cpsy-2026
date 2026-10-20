@@ -1,5 +1,5 @@
 import time, board, adafruit_tcs34725
-from gpiozero import Robot
+from gpiozero import Robot, DigitalOutputDevice, Motor
 
 s = adafruit_tcs34725.TCS34725(board.I2C())
 s.integration_time = 24   # ms, short = faster loop

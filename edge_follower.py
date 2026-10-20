@@ -8,7 +8,7 @@ s.gain = 4
 slp = DigitalOutputDevice('GPIO26')
 slp.on()
 robot = Robot(right=Motor('GPIO12', 'GPIO18'), left=Motor('GPIO19', 'GPIO13'))
-SPEED = 0.3   # lowest speed that still turns reliably
+SPEED = 0.1   # lowest speed that still turns reliably
 TH = 2500    # midpoint from your measurements
 
 try:

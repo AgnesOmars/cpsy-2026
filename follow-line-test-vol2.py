@@ -12,7 +12,7 @@ from encoder import Encoders
 SLOW = FAST = 250         # Speed in turns
 K = 0.5            # Steering strength near the edge
 PIVOT = 0.4        # If |error| is above this, pivot
-PIVOT_INNER = -0.2 # Inner wheel power when pivoting (0 = stop, negative = turn tighter)
+PIVOT_INNER = 0 # Inner wheel power when pivoting (0 = stop, negative = turn tighter)
 LOST_TIME = 0.6    # Seconds off the edge before we spin the other way
 KP = 0.0008
 KI = 0.002

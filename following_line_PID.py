@@ -9,7 +9,7 @@ from encoder import Encoders
 # Settings
 # ---------------------------------------------------------------
 SPEED = 400        # Target wheel speed in encoder steps per second (692 = 1 rotation)
-TH = 2500          # Midpoint between black (300) and white (4700)
+TH = 3000          # Midpoint between black (300) and white (4700)
 KP = 0.0008        # Wheel PID gains
 KI = 0.002
 KD = 0.0
@@ -48,7 +48,7 @@ try:
 
         # 3. DECIDE + 4. CALCULATE
         if c < TH:                         # dark = on line -> turn left
-            left_cmd = 0
+            left_cmd = -0.1
             right_cmd = pid_right(right_speed)
             pid_left.reset()               # stopped wheel starts fresh next time
         else:                              # bright = floor -> turn right

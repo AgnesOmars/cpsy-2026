@@ -8,10 +8,10 @@ from encoder import Encoders
 # ---------------------------------------------------------------
 # Settings
 # ---------------------------------------------------------------
-SPEED =  400        # Target wheel speed in encoder steps per second (692 = 1 rotation)
-TURN_SPEED = 250    # Speed in sharp turns
-TURN_TIME_LINE = 0.28   # how long the robot can stay on black or white before we decide it is a sharp turn
-TURN_TIME_FLOOR = 0.50
+SPEED = 400        # Normal speed in encoder steps per second (692 = 1 rotation)
+TURN_SPEED = 250   # Speed in sharp left turns
+TURN_TIME = 0.28   # Seconds on black before we count it as a sharp left turn
+HOLD = 1.0         # Seconds to stay slow after the last sharp-turn sign
 TH = 3000          # Threshold for finding the line, c
 KP = 0.0008        # Wheel PID gains
 KI = 0.002
@@ -38,6 +38,7 @@ try:
     t_prev = time.perf_counter()
     on_line_prev = False
     t_switch = time.perf_counter()   # time of the last line/floor switch
+    slow_until = 0.0                 # drive slowly until this time
 
     while True:
         # 1. SENSE: line or floor?
@@ -52,31 +53,27 @@ try:
         right_speed = (right - right_prev) / dt
         left_prev, right_prev, t_prev = left, right, t_now
 
-        # 3. DECIDE: sharp turn or not?
-        #    Restart the timer every time we switch between line and floor.
-        #    If we stay on the same side for long, we're in a sharp turn -> slow down.
-        if on_line != on_line_prev:
+        # 3. DECIDE: are we in a sharp left turn?
+        if on_line != on_line_prev:          # switched color -> restart stopwatch
             t_switch = t_now
             on_line_prev = on_line
 
-        if on_line:
-            limit = TURN_TIME_LINE
-        else:
-            limit = TURN_TIME_FLOOR
+        if on_line and t_now - t_switch > TURN_TIME:
+            slow_until = t_now + HOLD        # long time on black = sharp left turn
 
-        if t_now - t_switch > limit:
+        if t_now < slow_until:
             target = TURN_SPEED
         else:
             target = SPEED
+        pid_left.setpoint = target
+        pid_right.setpoint = target
 
         # 4. CALCULATE
-        if on_line:                        # dark = on line -> turn left
-            pid_right.setpoint = target
+        if on_line:                          # dark = on line -> turn left
             left_cmd = -0.1
             right_cmd = pid_right(right_speed)
-            pid_left.reset()               # stopped wheel starts fresh next time
-        else:                              # bright = floor -> turn right
-            pid_left.setpoint = target
+            pid_left.reset()
+        else:                                # bright = floor -> turn right
             left_cmd = pid_left(left_speed)
             right_cmd = 0
             pid_right.reset()
@@ -84,8 +81,7 @@ try:
         # 5. ACT
         robot.value = (left_cmd, right_cmd)
 
-        # print(c, "line" if on_line else "floor", f"t={t_now - t_switch:.2f}",
-        #       f"L={left_speed:4.0f} R={right_speed:4.0f}")
+        #print("line " if on_line else "floor", "SLOW" if t_now < slow_until else "fast")
 
 finally:
     robot.stop()

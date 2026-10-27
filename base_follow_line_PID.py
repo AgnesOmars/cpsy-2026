@@ -9,7 +9,7 @@ from encoder import Encoders
 # Settings
 # ---------------------------------------------------------------
 SPEED = 400        # Target wheel speed in encoder steps per second (692 = 1 rotation)
-TH = 984          # Threshold for finding the line, c
+TH = 1150          # Threshold for finding the line, c
 KP = 0.0008        # Wheel PID gains
 KI = 0.002
 KD = 0.0
@@ -59,7 +59,8 @@ try:
         # 5. ACT
         robot.value = (left_cmd, right_cmd)
 
-        # print(c, "line" if c < TH else "floor", f"L={left_speed:4.0f} R={right_speed:4.0f}")
+        print(f"dt={dt*1000:4.0f} ms  c={c:5d} {'line ' if c < TH else 'floor'}  "
+              f"L={left_speed:5.0f} ({left_cmd:+.2f})  R={right_speed:5.0f} ({right_cmd:+.2f})")
 
 finally:
     robot.stop()

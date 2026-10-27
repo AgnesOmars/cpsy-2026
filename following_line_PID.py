@@ -10,7 +10,7 @@ from encoder import Encoders
 # ---------------------------------------------------------------
 SPEED =  400        # Target wheel speed in encoder steps per second (692 = 1 rotation)
 TURN_SPEED = 250    # Speed in sharp turns
-TURN_TIME_LINE = 0.28   # seconds on the same side before we count it as a sharp turn
+TURN_TIME_LINE = 0.28   # how long the robot can stay on black or white before we decide it is a sharp turn
 TURN_TIME_FLOOR = 0.50
 TH = 3000          # Threshold for finding the line, c
 KP = 0.0008        # Wheel PID gains

@@ -8,8 +8,8 @@ from encoder import Encoders
 # ---------------------------------------------------------------
 # Settings
 # ---------------------------------------------------------------
-SPEED = 400        # Target wheel speed in encoder steps per second (692 = 1 rotation)
-TURN_SPEED = 200   # Speed in sharp turns
+SPEED = TURN_SPEED =  400        # Target wheel speed in encoder steps per second (692 = 1 rotation)
+#TURN_SPEED = 200   # Speed in sharp turns
 TURN_TIME = 0.15   # seconds on the same side before we count it as a sharp turn
 TH = 3000          # Threshold for finding the line, c
 KP = 0.0008        # Wheel PID gains
@@ -37,6 +37,8 @@ try:
     t_prev = time.perf_counter()
     on_line_prev = False
     t_switch = time.perf_counter()   # time of the last line/floor switch
+    max_line = 0.0
+    max_floor = 0.0
 
     while True:
         # 1. SENSE: line or floor?
@@ -55,6 +57,13 @@ try:
         #    Restart the timer every time we switch between line and floor.
         #    If we stay on the same side for long, we're in a sharp turn -> slow down.
         if on_line != on_line_prev:
+            duration = t_now - t_switch
+            side = "line " if on_line_prev else "floor"
+            if on_line_prev:
+                max_line = max(max_line, duration)
+            else:
+                max_floor = max(max_floor, duration)
+            print(f"{side} {duration:.2f} s   (max line {max_line:.2f}, max floor {max_floor:.2f})")
             t_switch = t_now
             on_line_prev = on_line
 

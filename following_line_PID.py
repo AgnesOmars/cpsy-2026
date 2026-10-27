@@ -9,7 +9,9 @@ from encoder import Encoders
 # Settings
 # ---------------------------------------------------------------
 SPEED = 400        # Target wheel speed in encoder steps per second (692 = 1 rotation)
-TH = 3000          # Midpoint between black (300) and white (4700)
+TURN_SPEED = 200   # Speed in sharp turns
+TURN_TIME = 0.15   # seconds on the same side before we count it as a sharp turn
+TH = 3000          # Threshold for finding the line, c
 KP = 0.0008        # Wheel PID gains
 KI = 0.002
 KD = 0.0
@@ -33,10 +35,13 @@ pid_right = PID(KP, KI, KD, setpoint=SPEED, sample_time=None, output_limits=(0, 
 try:
     left_prev, right_prev = enc.read()
     t_prev = time.perf_counter()
+    on_line_prev = False
+    t_switch = time.perf_counter()   # time of the last line/floor switch
 
     while True:
         # 1. SENSE: line or floor?
         r, g, b, c = sensor.color_raw
+        on_line = c < TH
 
         # 2. MEASURE: wheel speeds in steps per second
         left, right = enc.read()
@@ -46,12 +51,26 @@ try:
         right_speed = (right - right_prev) / dt
         left_prev, right_prev, t_prev = left, right, t_now
 
-        # 3. DECIDE + 4. CALCULATE
-        if c < TH:                         # dark = on line -> turn left
+        # 3. DECIDE: sharp turn or not?
+        #    Restart the timer every time we switch between line and floor.
+        #    If we stay on the same side for long, we're in a sharp turn -> slow down.
+        if on_line != on_line_prev:
+            t_switch = t_now
+            on_line_prev = on_line
+
+        if t_now - t_switch > TURN_TIME:
+            target = TURN_SPEED
+        else:
+            target = SPEED
+
+        # 4. CALCULATE
+        if on_line:                        # dark = on line -> turn left
+            pid_right.setpoint = target
             left_cmd = -0.1
             right_cmd = pid_right(right_speed)
             pid_left.reset()               # stopped wheel starts fresh next time
         else:                              # bright = floor -> turn right
+            pid_left.setpoint = target
             left_cmd = pid_left(left_speed)
             right_cmd = 0
             pid_right.reset()
@@ -59,7 +78,8 @@ try:
         # 5. ACT
         robot.value = (left_cmd, right_cmd)
 
-        # print(c, "line" if c < TH else "floor", f"L={left_speed:4.0f} R={right_speed:4.0f}")
+        # print(c, "line" if on_line else "floor", f"t={t_now - t_switch:.2f}",
+        #       f"L={left_speed:4.0f} R={right_speed:4.0f}")
 
 finally:
     robot.stop()

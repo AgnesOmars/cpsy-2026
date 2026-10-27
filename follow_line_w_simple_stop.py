@@ -58,7 +58,7 @@ try:
     stopped = False
     clear = 0          # how many readings in a row have been below V_GO
     loop = 0
-
+    v = 0.0
     while True:
         # 1. SENSE: line or floor? obstacle ahead?
         r, g, b, c = sensor.color_raw

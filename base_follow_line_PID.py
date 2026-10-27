@@ -18,7 +18,7 @@ KD = 0.0
 # Hardware setup
 # ---------------------------------------------------------------
 sensor = adafruit_tcs34725.TCS34725(board.I2C())
-sensor.integration_time = 24   # ms, short = faster loop
+sensor.integration_time = 12   # ms, short = faster loop
 sensor.gain = 4
 
 slp = DigitalOutputDevice('GPIO26')

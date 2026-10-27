@@ -3,7 +3,7 @@ import time, board, adafruit_tcs34725, busio
 i2c = busio.I2C(board.SCL, board.SDA)
 sensor = adafruit_tcs34725.TCS34725(i2c)
 
-sensor.integration_time = 24
+sensor.integration_time = 12
 sensor.gain = 4
 
 while True:

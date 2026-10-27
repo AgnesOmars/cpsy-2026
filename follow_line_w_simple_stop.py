@@ -57,11 +57,14 @@ try:
     t_prev = time.perf_counter()
     stopped = False
     clear = 0          # how many readings in a row have been below V_GO
+    loop = 0
 
     while True:
         # 1. SENSE: line or floor? obstacle ahead?
         r, g, b, c = sensor.color_raw
-        v = chan0.voltage
+        loop += 1
+        if loop % 3 == 0:
+            v = chan0.voltage
 
         # 2. MEASURE: wheel speeds in steps per second
         left, right = enc.read()

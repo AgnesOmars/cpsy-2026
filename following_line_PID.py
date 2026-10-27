@@ -8,7 +8,7 @@ from encoder import Encoders
 # ---------------------------------------------------------------
 # Settings
 # ---------------------------------------------------------------
-SPEED = 400        # Normal speed in encoder steps per second (692 = 1 rotation)
+SPEED = 500        # Normal speed in encoder steps per second (692 = 1 rotation)
 TURN_SPEED = 250   # Speed in sharp left turns
 TURN_TIME = 0.28   # Seconds on black before we count it as a sharp left turn
 HOLD = 1.0         # Seconds to stay slow after the last sharp-turn sign
@@ -70,7 +70,7 @@ try:
 
         # 4. CALCULATE
         if on_line:                          # dark = on line -> turn left
-            left_cmd = -0.1
+            left_cmd = 0
             right_cmd = pid_right(right_speed)
             pid_left.reset()
         else:                                # bright = floor -> turn right

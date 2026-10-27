@@ -12,7 +12,7 @@ from encoder import Encoders
 # ---------------------------------------------------------------
 # Settings
 # ---------------------------------------------------------------
-SPEED = 500        # Target wheel speed in encoder steps per second (692 = 1 rotation)
+SPEED = 400        # Target wheel speed in encoder steps per second (692 = 1 rotation)
 TH = 3000          # Threshold for finding the line, c
 KP = 0.0008        # Wheel PID gains
 KI = 0.002

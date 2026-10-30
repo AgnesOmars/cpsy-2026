@@ -12,23 +12,24 @@ from encoder import Encoders
 # ---------------------------------------------------------------
 # Settings
 # ---------------------------------------------------------------
-SPEED = 400        # Target wheel speed in encoder steps per second (692 = 1 rotation)
-TH = 3000          # Threshold for finding the line, c
+SPEED = 700        # Target wheel speed in encoder steps per second (692 = 1 rotation)
+TH = 1150          # Threshold for finding the line, c
 KP = 0.0008        # Wheel PID gains
 KI = 0.002
 KD = 0.0
 
 V_STOP = 1.94      # Distance sensor voltage at ~30 cm -> stop
 V_GO = 1.5         # Drive again below this (lower than V_STOP)
-GO_COUNT = 5       # Readings in a row below V_GO before driving again
+GO_COUNT = 15      # Readings in a row below V_GO before driving again (~0.3 s at ~21 ms/loop)
 
 # ---------------------------------------------------------------
 # Hardware setup
 # ---------------------------------------------------------------
 # Color sensor (I2C)
 sensor = adafruit_tcs34725.TCS34725(board.I2C())
-sensor.integration_time = 24   # ms, short = faster loop
+sensor.integration_time = 12   # ms, short = faster loop
 sensor.gain = 4
+sensor.active = True           # keep measuring all the time = much faster loop
 
 # Distance sensor through the MCP3008 ADC (SPI), channel 0
 spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI)
@@ -58,13 +59,12 @@ try:
     stopped = False
     clear = 0          # how many readings in a row have been below V_GO
     loop = 0
-    v = 0.0
+    t_start = time.perf_counter()   # for the average loop time
+
     while True:
         # 1. SENSE: line or floor? obstacle ahead?
         r, g, b, c = sensor.color_raw
-        loop += 1
-        if loop % 3 == 0:
-            v = chan0.voltage
+        v = chan0.voltage
 
         # 2. MEASURE: wheel speeds in steps per second
         left, right = enc.read()
@@ -97,7 +97,12 @@ try:
             pid_right.reset()
             robot.value = (pid_left(left_speed), 0)
 
-        # print(f"c={c:5d} v={v:.2f} {'STOPPED' if stopped else ''}")
+        # DEBUG: average loop time, printed every 50 loops
+        loop += 1
+        if loop % 50 == 0:
+            avg = (t_now - t_start) / 50
+            print(f"average loop time: {avg*1000:.1f} ms  v={v:.2f}  {'STOPPED' if stopped else ''}")
+            t_start = t_now
 
 finally:
     robot.stop()

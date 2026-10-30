@@ -35,8 +35,6 @@ pid_right = PID(KP, KI, KD, setpoint=SPEED, sample_time=None, output_limits=(0, 
 try:
     left_prev, right_prev = enc.read()
     t_prev = time.perf_counter()
-    loop = 0
-    t_start = time.perf_counter() # for average loop time
 
     while True:
         # 1. SENSE: line or floor?
@@ -63,13 +61,6 @@ try:
         # 5. ACT
         robot.value = (left_cmd, right_cmd)
 
-        # print(c, "line" if c < TH else "floor", f"L={left_speed:4.0f} R={right_speed:4.0f}")
-	# DEBUG: average loop time, printed every 50 loops
-        loop += 1
-        if loop % 50 == 0:
-            avg = (t_now - t_start) / 50
-            print(f"average loop time: {avg*1000:.1f} ms  ({1/avg:.0f} readings per second)")
-            t_start = t_now
 
 finally:
     robot.stop()
